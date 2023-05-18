@@ -43,11 +43,11 @@ def magic_8_ball(prompt):
 
   question = input(prompt)
 
-  if "quit" not in question:
+  if not question.lower() == "quit":
     print("Hmm...")
     print(responses[random.randint(0, 20)])
     magic_8_ball("Would you like to ask another question or quit?\n")
   else:
-    print("K.")
+    print("K, bye.")
 
 magic_8_ball("What do you wish to know?\n")
