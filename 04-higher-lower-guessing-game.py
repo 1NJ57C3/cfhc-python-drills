@@ -25,7 +25,7 @@ def gameloop(prompt, num, score=0):
     elif score <= 10:
       return direction.capitalize()
     else:
-      return flavor(random.randrange(3, flavor.len)) + direction.upper()
+      return flavor[random.randrange(3, len(flavor))] + direction.upper()
 
   if "quit" in response or "exit" in response:
     print("Fine. I've got better things to do, anyway!")
