@@ -13,41 +13,7 @@ SUBGOALS
 """
 import random
 
-def generate_number():
-  return random.randint(1, 100)
-
-def gameloop(prompt, num, score=0):
-  response = input(prompt + "\n> ").lower()
-
-  def failure(direction):
-    if score < 5:
-      return flavor[random.randrange(3)] + direction
-    elif score <= 10:
-      return direction.capitalize()
-    else:
-      return flavor[random.randrange(3, len(flavor))] + direction.upper()
-
-  try:
-    int(response)
-    if int(response) < num:
-      gameloop(failure("higher"), num, score+1)
-    elif int(response) > num:
-      gameloop(failure("lower"), num, score+1)
-    elif str(num) in response:
-      print("Congratulations! You win and get... Nothing!")
-      print("Guesses: " + str(score))
-      response = input("Would you like to play again? (y/n)\n")
-      if "y" in response.lower():
-        gameloop("Here we go, again. 1 to 100. Hit me.", generate_number())
-      else:
-        print("Goodbye")
-  except ValueError:
-    if any(word in response for word in ["quit", "exit", "give up", "giving up"]) or response == "q":
-      print(exit_messages[random.randrange(len(exit_messages))])
-    else:
-      gameloop(failed_validation[random.randrange(len(failed_validation))], num, score)
-
-flavor = [
+HINT_FLAVOR = [
   "Aim ",
   "Try ",
   "Maybe ",
@@ -55,19 +21,61 @@ flavor = [
   "Dude. ",
   "Bruh. ",
   "Come on! ",
+  "Seriously?! ",
+  "How are we still doing this?! ",
 ]
 
-failed_validation = [
+VALIDATION_ERRORS = [
   "Unless you're quitting, numbers only, please.",
   "You're supposed to give me a number.",
   "This is a NUMBER guessing game, idiot!",
 ]
 
-exit_messages = [
+EXIT_PHRASES = ["quit", "exit", "give up", "giving up"]
+
+EXIT_RESPONSES = [
   "Fine. I've got better things to do, anyway!",
   "Whatever.",
   "Okay, bye.",
   "Ugh.",
 ]
 
-gameloop("I am thinking of a number between 1 and 100. Guess what it is. If you guess wrong, I'll give you a hint.", generate_number())
+def generate_number():
+  return random.randint(1, 100)
+
+def game_loop(prompt, num, score=0):
+  response = input(prompt + "\n> ").lower()
+
+  def retry_prompt(direction):
+    if score < 5:
+      return HINT_FLAVOR[random.randrange(3)] + direction
+    elif score <= 10:
+      return direction.capitalize()
+    else:
+      return HINT_FLAVOR[random.randrange(3, len(HINT_FLAVOR))] + direction.upper()
+
+  def victory_prompt():
+    print("Congratulations! You win and get... Nothing!")
+    print("Guesses: " + str(score))
+    response = input("Would you like to play again? (y/n)\n")
+    if "y" in response:
+      game_loop("Here we go, again. 1 to 100. Hit me.", generate_number())
+    else:
+      print("Goodbye")
+
+  if any(exit_phrase in response for exit_phrase in EXIT_PHRASES) or response == "q":
+    print(EXIT_RESPONSES[random.randrange(len(EXIT_RESPONSES))])
+  else:
+    try:
+      int(response)
+    except ValueError:
+      game_loop(VALIDATION_ERRORS[random.randrange(len(VALIDATION_ERRORS))], num, score)
+    else:
+      if int(response) < num:
+        game_loop(retry_prompt("higher"), num, score + 1)
+      elif int(response) > num:
+        game_loop(retry_prompt("lower"), num, score + 1)
+      elif str(num) in response:
+        victory_prompt()
+
+game_loop("I am thinking of a number between 1 and 100. Guess what it is. If you guess wrong, I'll give you a hint.", generate_number())
